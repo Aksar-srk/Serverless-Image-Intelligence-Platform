@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>📸 Visual Wizard - Gallery</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+:root {
+  --bg: #0f172a;
+  --accent: #38bdf8;
+  --text: #e5e7eb;
+  --muted: #94a3b8;
+  --accent-soft: rgba(56,189,248,0.15);
+}
+
+body {
+  background: #0f172a;
+  color: var(--text);
+  font-family: system-ui, sans-serif;
+  margin: 0;
+}
+
+header {
+  text-align: center;
+  padding: 1.4rem;
+  font-size: 2rem;
+  background: linear-gradient(135deg,#020617,#0f172a);
+  border-bottom: 1px solid #1f2937;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  padding: 20px;
+}
+
+.image-card {
+  background: #020617;
+  border-radius: 10px;
+  border: 1px solid rgba(56,189,248,.25);
+  padding: 10px;
+  transition: transform .25s ease;
+}
+.image-card:hover { transform: scale(1.03); }
+
+.image-card img {
+  width: 100%;
+  height: 260px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #0f172a;
+}
+
+.labels { margin-top: 6px; text-align: center; }
+.label-pill {
+  display: inline-block;
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  border: 1px solid rgba(56,189,248,.45);
+  color: var(--accent);
+  margin: 2px;
+}
+
+button {
+  padding: .6rem 1.2rem;
+  font-size: .9rem;
+  margin: 1rem auto;
+  display: block;
+  background: var(--accent);
+  color: black;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+}
+button:hover { background: #7dd3fc; transform:translateY(-2px) }
+</style>
+</head>
+
+<body>
+
+<header>📸 Full Image Gallery</header>
+<button onclick="window.close()">⬅ Close</button>
+
+<div id="resultsGrid" class="gallery-grid"></div>
+
+<script>
+const CONFIG = {
+  apiBaseUrl: "https://xgsl7euy9f.execute-api.us-east-1.amazonaws.com/prod"
+,
+  bucketBase: "https://visual-wizard-051826730831-photos.s3.amazonaws.com"
+};
+
+async function loadGallery() {
+  const res = await fetch(`${CONFIG.apiBaseUrl}/search`);
+  const data = await res.json();
+  render(data.results);
+}
+
+function render(items) {
+  const grid = document.getElementById("resultsGrid");
+  grid.innerHTML = "";
+
+  items.forEach(item => {
+    const url = item.image_url || `${CONFIG.bucketBase}/${item.object_key}`;
+    grid.innerHTML += `
+      <div class="image-card">
+        <img src="${url}" alt="${item.image_id}" />
+        <div class="labels">
+          ${item.labels.map(l => `<span class='label-pill'>${l}</span>`).join("")}
+        </div>
+      </div>
+    `;
+  });
+}
+
+loadGallery();
+</script>
+</body>
+</html>
